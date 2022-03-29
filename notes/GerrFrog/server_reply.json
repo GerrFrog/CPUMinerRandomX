@@ -1,0 +1,28 @@
+{
+    "id": 1,
+    "jsonrpc": "2.0",
+    "error": null,
+    "result": {
+        "id": "1",
+        "job": {
+            "height": 2584296,
+            "blob": "0e0eacc6e09106281e2557b662043f93ce7cb77b95df3f1b59ac200a7fbb890fc3847c0febc0dd0000000098e81ffaa96e0e16689d5b1c44f3fa28ca44fe7c88f75eebf351f698a8e22f1309",
+            "job_id": "0",
+            "target": "1b430000",
+            "seed_hash": "2c45d0f588a3b289d03aaf42d4a7459306fd5fb796baca46f2877684f8fe748a"
+        },
+        "status": "OK"
+    }
+}
+
+{
+    "jsonrpc": "2.0",
+    "method": "job",
+    "params": {
+        "height": 2584296,
+        "blob": "0e0e99c7e09106281e2557b662043f93ce7cb77b95df3f1b59ac200a7fbb890fc3847c0febc0dd0000000037bb418474ca9ed2bb6c1fd92a02f32fa01f98003453db26e8ab1d4eec9e469824",
+        "job_id": "1",
+        "target": "36860000",
+        "seed_hash": "2c45d0f588a3b289d03aaf42d4a7459306fd5fb796baca46f2877684f8fe748a"
+    }
+}

@@ -301,8 +301,19 @@ namespace Pools::Implementors::Parsers
     {
         // TODO: Implement
         private:
+            /**
+             * @brief Response ID when login to pool
+             * 
+             * @author GerrFrog
+             */
+            string rpc_id;
 
-        protected:
+            /**
+             * @brief Login status
+             * 
+             * @author GerrFrog
+             */
+            bool status = false;
 
         public:
             /**
@@ -328,9 +339,33 @@ namespace Pools::Implementors::Parsers
              */
             Utilities::Pools::New_Job_V1 parse(string &message)
             {
-                // TODO: Implement parse message
+                nlohmann::json json_message = nlohmann::json::parse(message);
+                nlohmann::json params;
+
                 Utilities::Pools::New_Job_V1 new_job;
-                cout << message << endl;
+
+                if (!json_message.contains("params"))
+                {
+                    if ((string)json_message["result"]["status"] == "OK")
+                        this->status = true;
+                    if (json_message["result"].contains("id"))
+                    {
+                        this->rpc_id = (string)json_message["result"]["id"];
+                        params = json_message["result"]["job"];
+                    } else {
+                    }
+                } else {
+                    params = json_message["params"];
+                }
+
+                string blob = params["blob"];
+                string seed_hash = params["seed_hash"];
+
+                new_job.height = params["height"];
+                new_job.blob = Utilities::HEX_String(blob);
+                new_job.job_id = params["job_id"];
+                new_job.target = params["target"];
+                new_job.seed_hash = Utilities::HEX_String(seed_hash);
 
                 return new_job;
             }
