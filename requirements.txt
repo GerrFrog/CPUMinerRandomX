@@ -1,0 +1,3 @@
+pandas
+pyrx
+py-cryptonight
