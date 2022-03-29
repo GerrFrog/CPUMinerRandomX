@@ -4,9 +4,9 @@
         "port": 8080
     },
     "pool": {
-        "host": "",
-        "port": "",
-        "login": "",
-        "password": ""
+        "host": "pool.minexmr.com",
+        "port": "4444",
+        "login": "888tNkZrPN6JsEgekjMnABU4TBzc2Dt29EPAvkRxbANsAnjyPbb3iQ1YBRk1UXcdRsiKc9dhwMVgN5S9cQUiyoogDavup3H",
+        "password": "x"
     }
 }

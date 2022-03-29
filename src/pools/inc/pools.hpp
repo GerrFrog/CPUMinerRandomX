@@ -445,7 +445,7 @@ namespace Pools
             {
                 if (!err)
                 {
-                    string message;string message = this->prepare_message(this->authorize_message);
+                    string message = this->prepare_message(this->authorize_message);
 
                     this->socket.async_send(
                         net::buffer(message),
@@ -498,6 +498,7 @@ namespace Pools
                         );
 
                         Utilities::Pools::New_Job_V1 new_job = this->parse(raw_message);
+                        cout << raw_message << endl;
 
                         this->socket.async_receive(
                             net::buffer(this->read_buffer),
