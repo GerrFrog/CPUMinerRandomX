@@ -655,6 +655,8 @@ namespace Pools
                             net::buffer(this->read_buffer),
                             boost::bind(
                                 &Pool_V2::handle_server_msg,
+                                this,
+                                net::placeholders::error,
                                 net::placeholders::bytes_transferred
                             )
                         );
