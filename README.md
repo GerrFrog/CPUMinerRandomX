@@ -1,10 +1,6 @@
 # CPUMinerBase
 Skelet for any CPU-miner projects
 
-## Architectures:
-- Advanced Micro Devices (AMD)
-- Intel
-
 ## Project Tree
 ```bash
 $ sudo apt install tree
