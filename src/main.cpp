@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
                 << "SERVER PORT: " << (int)configuration["server"]["port"] << endl
             << endl;
 
-        Pools::Pool pool(configuration["pool"]);
+        Pools::Pool_V1 pool(configuration["pool"]);
         std::cin.ignore();
 
     } catch (std::logic_error& exp) {

@@ -197,7 +197,40 @@ namespace Utilities::Pools
      */
     struct New_Job_V1
     {
-        // TODO: Implement
+        /**
+         * @brief Height
+         * 
+         * @author GerrFrog
+         */
+        unsigned long long height;
+
+        /**
+         * @brief Blob
+         * 
+         * @author GerrFrog
+         */
+        Utilities::HEX_String blob;
+
+        /**
+         * @brief Job ID
+         * 
+         * @author GerrFrog
+         */
+        string job_id;
+
+        /**
+         * @brief Target
+         * 
+         * @author GerrFrog
+         */
+        string target;
+
+        /**
+         * @brief Seed hash
+         * 
+         * @author GerrFrog
+         */
+        Utilities::HEX_String seed_hash;
     };
 
     /**

@@ -303,6 +303,20 @@ namespace Pools::Implementors::Parsers
         private:
 
         protected:
+        private:
+            /**
+             * @brief Response ID when login to pool
+             * 
+             * @author GerrFrog
+             */
+            string rpc_id;
+
+            /**
+             * @brief Login status
+             * 
+             * @author GerrFrog
+             */
+            bool status = false;
 
         public:
             /**
@@ -328,9 +342,33 @@ namespace Pools::Implementors::Parsers
              */
             Utilities::Pools::New_Job_V1 parse(string &message)
             {
-                // TODO: Implement parse message
+                nlohmann::json json_message = nlohmann::json::parse(message);
+                nlohmann::json params;
+
                 Utilities::Pools::New_Job_V1 new_job;
-                cout << message << endl;
+
+                if (!json_message.contains("params"))
+                {
+                    if ((string)json_message["result"]["status"] == "OK")
+                        this->status = true;
+                    if (json_message["result"].contains("id"))
+                    {
+                        this->rpc_id = (string)json_message["result"]["id"];
+                        params = json_message["result"]["job"];
+                    } else {
+                    }
+                } else {
+                    params = json_message["params"];
+                }
+
+                string blob = params["blob"];
+                string seed_hash = params["seed_hash"];
+
+                new_job.height = params["height"];
+                new_job.blob = Utilities::HEX_String(blob);
+                new_job.job_id = params["job_id"];
+                new_job.target = params["target"];
+                new_job.seed_hash = Utilities::HEX_String(seed_hash);
 
                 return new_job;
             }
@@ -389,13 +427,158 @@ namespace Pools::Implementors::Parsers
 namespace Pools
 {
     /**
-     * @brief Connector to pool with specific method of Stratum protocol
+     * @brief Connector to pool with specific method of Stratum V1 protocol
      * 
      * @author GerrFrog
      */
-    class Pool
+    class Pool_V1
         : virtual public Pools::Implementors::Stratum_Socket,
-          virtual public Pools::Implementors::Parsers::Parser_V1,
+          virtual public Pools::Implementors::Parsers::Parser_V1
+    {
+        private:
+            /**
+             * @brief Callback when connected to server
+             * 
+             * @author GerrFrog
+             * 
+             * @param err Error code
+             */
+            void handle_connect(
+                const boost::system::error_code& err
+            )
+            {
+                if (!err)
+                {
+                    string message = this->prepare_message(this->authorize_message);
+
+                    this->socket.async_send(
+                        net::buffer(message),
+                        boost::bind(
+                            &Pool_V1::handle_write_completed,
+                            this,
+                            net::placeholders::error,
+                            net::placeholders::bytes_transferred
+                        )
+                    );
+                }
+            }
+
+            /**
+             * @brief Callback when read server message
+             * 
+             * @author GerrFrog
+             * 
+             * @param err Error code
+             * @param bytes_transferred Raw transferred bytes
+             */
+            void handle_server_msg(
+                const boost::system::error_code& err,
+                std::size_t bytes_transferred
+            )
+            {
+               if (!err)
+                {
+                    for (std::size_t start = 0, end = 0; end < bytes_transferred; end++, start = end)
+                    {
+                        while (end < bytes_transferred && read_buffer[ end ] != '\n')
+                            end++;
+
+                        if (end == bytes_transferred)
+                        {
+                            string unfinished_message(
+                                std::next(std::begin(read_buffer), start),
+                                std::next(std::begin(read_buffer), end + 1)
+                            );
+                            cout << "[ERROR] unfinished data: " << unfinished_message << std::endl;
+                            break;
+                        }
+
+                        if (start == end)
+                            continue;
+
+                        string raw_message(
+                            std::next(std::begin(read_buffer), start),
+                            std::next(std::begin(read_buffer), end)
+                        );
+
+                        Utilities::Pools::New_Job_V1 new_job = this->parse(raw_message);
+                        cout << raw_message << endl;
+
+                        this->socket.async_receive(
+                            net::buffer(this->read_buffer),
+                            boost::bind(
+                                &Pool_V1::handle_server_msg,
+                                this,
+                                net::placeholders::error,
+                                net::placeholders::bytes_transferred
+                            )
+                        );
+                    }
+                } else {
+                    // TODO: Error
+                }
+            }
+
+        public:
+            /**
+             * @brief Construct a new xmr pool object
+             * 
+             * @author GerrFrog
+             * 
+             * @param config Pool configuration
+             */
+            Pool_V1(
+                nlohmann::json &config
+            ) : Stratum_Socket(
+                    (string)config["host"],
+                    (string)config["port"]
+                ),
+                Parser_V1()
+            {
+                nlohmann::json mining_authorize({
+                    {"method", "login"},
+                    {"params", {
+                        {"login", (string)config["login"]},
+                        {"pass", (string)config["password"]},
+                        {"agent", "user-agent/0.1"},
+                        {"mode", "self-select"}
+                    }}
+                });
+
+                this->authorize_message.insert(
+                    mining_authorize.begin(),
+                    mining_authorize.end()
+                );
+
+                auto _ = std::async(
+                    boost::bind(
+                        &net::io_service::run,
+                        &this->io_service
+                    )
+                );
+                this->io_service.post(
+                    boost::bind(
+                        &Pool_V1::connect,
+                        this
+                    )
+                );
+            }
+    
+            /**
+             * @brief Destroy the xmr pool object
+             * 
+             * @author GerrFrog
+             */
+            virtual ~Pool_V1() = default;
+    };
+
+    /**
+     * @brief Connector to pool with specific method of Stratum V1 protocol
+     * 
+     * @author GerrFrog
+     */
+    class Pool_V2
+        : virtual public Pools::Implementors::Stratum_Socket,
           virtual public Pools::Implementors::Parsers::Parser_V2
     {
         private:
@@ -418,7 +601,7 @@ namespace Pools
                     this->socket.async_send(
                         net::buffer(message),
                         boost::bind(
-                            &Pool::handle_write_completed,
+                            &Pool_V2::handle_write_completed,
                             this,
                             net::placeholders::error,
                             net::placeholders::bytes_transferred
@@ -471,9 +654,7 @@ namespace Pools
                         this->socket.async_receive(
                             net::buffer(this->read_buffer),
                             boost::bind(
-                                &Pool::handle_server_msg,
-                                this,
-                                net::placeholders::error,
+                                &Pool_V2::handle_server_msg,
                                 net::placeholders::bytes_transferred
                             )
                         );
@@ -491,13 +672,12 @@ namespace Pools
              * 
              * @param config Pool configuration
              */
-            Pool(
+            Pool_V2(
                 nlohmann::json &config
             ) : Stratum_Socket(
                     (string)config["host"],
                     (string)config["port"]
                 ),
-                Parser_V1(),
                 Parser_V2()
             {
                 // TODO: Create authorize messages
@@ -510,7 +690,7 @@ namespace Pools
                 );
                 this->io_service.post(
                     boost::bind(
-                        &Pool::connect,
+                        &Pool_V2::connect,
                         this
                     )
                 );
@@ -521,7 +701,7 @@ namespace Pools
              * 
              * @author GerrFrog
              */
-            virtual ~Pool() = default;
+            virtual ~Pool_V2() = default;
     };
 }
 
