@@ -1,6 +1,15 @@
 # CPUMinerBase
 Skelet for any CPU-miner projects
 
+## Update repository by template
+```bash
+git remote add template [URL of the template repo]
+
+git fetch --all
+
+git merge template/[branch to merge]
+```
+
 ## Project Tree
 ```bash
 $ sudo apt install tree
