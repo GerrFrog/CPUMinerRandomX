@@ -7,7 +7,22 @@ git remote add template [URL of the template repo]
 
 git fetch --all
 
-git merge template/[branch to merge]
+git merge template/[branch to merge] --allow-unrelated-histories
+```
+
+## Create branch from another branch
+```bash
+git checkout -b myFeature dev
+
+git commit -am "Your message"
+
+git checkout dev
+
+git merge --no-ff myFeature
+
+git push origin dev
+
+git push origin myFeature
 ```
 
 ## Project Tree
